@@ -6,7 +6,7 @@
   "scripts": {
     "start:dev": "npx nodemon",
     "build": "rimraf ./build && tsc",
-    "start": "npm run build && node build/index.js",
+    "start": "npm run build && pwd && cp -R src/libs/parser/tree-sitter-parsers build/libs/parser && node build/apps/runner/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -17,6 +17,7 @@
     "nodemon": "^3.0.1",
     "rimraf": "^5.0.5",
     "ts-node": "^10.9.1",
-    "typescript": "^5.2.2"
+    "typescript": "^5.2.2",
+    "web-tree-sitter": "^0.20.8"
   }
 }
