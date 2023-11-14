@@ -61,6 +61,75 @@ export class SpringBootFileParser extends JavaFileParser {
         return ServerType.SPRING_BOOT
     }
 
+    getSwagger(): string {
+        let query = this.parser.getLanguage().query(`         (interface_declaration
+            (modifiers
+              (annotation
+                name: (identifier) @name
+                arguments: (annotation_argument_list
+                             (element_value_pair
+                               key: (identifier) @key
+                               value: (string_literal) @value)) @annotation_argument_list ))
+              name: (identifier) 
+            ) 
+
+            (method_declaration
+                (modifiers
+                (annotation
+                    name: (identifier) @name
+                    arguments: (annotation_argument_list
+                                (element_value_pair
+                                key: (identifier) @key
+                                value: (string_literal) @value)) @annotation_argument_list ))
+                name: (identifier) 
+                ) 
+      `);
+
+      let matches = query.matches(this.getAST().getRootNode());
+
+      let interface_endpoint = "";
+    //   console.log(JSON.stringify(matches))
+      for (const match of matches) {
+        const annotationNameNode = match.captures[0].node;
+        const annotationName = this.fileContent.slice(annotationNameNode.startIndex, annotationNameNode.endIndex);
+        console.log("Annotation Type:", annotationName);
+        if(annotationName.endsWith("Mapping")) {
+            const annotation_argument_list = match.captures[1].node
+            const string_literal_name = this.fileContent.slice(annotation_argument_list.startIndex, annotation_argument_list.endIndex)
+            console.log("annotation_argument_list: ", string_literal_name, this.fileContent.slice(match.captures[2].node.startIndex, match.captures[2].node.endIndex), 
+            this.fileContent.slice(match.captures[3].node.startIndex, match.captures[3].node.endIndex))
+            interface_endpoint = this.fileContent.slice(match.captures[3].node.startIndex, match.captures[3].node.endIndex);
+        }
+    }
+
+        query = this.parser.getLanguage().query(`         (method_declaration
+            (modifiers
+            (annotation
+                name: (identifier) @name
+                arguments: (annotation_argument_list
+                            (element_value_pair
+                            key: (identifier) @key
+                            value: (string_literal) @value)) @annotation_argument_list ))
+            name: (identifier) 
+            ) 
+    `);
+
+    matches = query.matches(this.getAST().getRootNode());
+
+    //   console.log(JSON.stringify(matches))
+    for (const match of matches) {
+        const annotationNameNode = match.captures[0].node;
+        const annotationName = this.fileContent.slice(annotationNameNode.startIndex, annotationNameNode.endIndex);
+        console.log("Annotation Type:", annotationName);
+        if(annotationName.endsWith("Mapping")) {
+        const annotation_argument_list = match.captures[1].node
+        const string_literal_name = this.fileContent.slice(annotation_argument_list.startIndex, annotation_argument_list.endIndex)
+        console.log("annotation_argument_list: ", string_literal_name, this.fileContent.slice(match.captures[2].node.startIndex, match.captures[2].node.endIndex), 
+        "\"" + (interface_endpoint + (this.fileContent.slice(match.captures[3].node.startIndex, match.captures[3].node.endIndex))).replace(/\"/g,"") +"\"" )
+        }
+    }
+    return ''
+    }
 }
 
 export class UnknownFileParser extends FileParser {

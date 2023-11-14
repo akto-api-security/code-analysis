@@ -6,6 +6,10 @@ export class AST {
         this.ast = tree
     }
 
+    getRootNode() {
+        return this.ast.rootNode;
+    }
+
     getStr() {
         return this.ast.rootNode.toString()
     }

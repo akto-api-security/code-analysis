@@ -15,8 +15,12 @@ function readAndParseFile(filePath: string) {
             parser = await parseFile(filePath, content)
             console.log("parser type: " + parser.getType() + " for file " + filePath)
             
-            if (parser.getType() != ServerType.UNKNOWN)
-                console.log(parser.getAST().getStr())
+            if (parser.getType() != ServerType.UNKNOWN) {
+                if (parser.filePath.endsWith("PetApi.java")) {
+                    console.log(parser.getAST().getStr())
+                    parser.getSwagger()
+                }
+            }
         },
         console.log
     )
@@ -32,4 +36,5 @@ export function extractAPIs(directory: string) {
     }      
 }
 
-extractAPIs("/Users/ankushjain/Downloads/spring-boot-tutorial-master")
+extractAPIs("/Users/shivamrawat/source-code-inventory/spring-server-generated")
+// extractAPIs("/Users/shivamrawat/Downloads/code-analysis-feature-detect_language")
