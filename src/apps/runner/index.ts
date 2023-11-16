@@ -13,13 +13,13 @@ function readAndParseFile(filePath: string) {
         filePath, 
         async (content: string) => {
             parser = await parseFile(filePath, content)
-            console.log("parser type: " + parser.getType() + " for file " + filePath)
+            // console.log("parser type: " + parser.getType() + " for file " + filePath)
             
             if (parser.getType() != ServerType.UNKNOWN) {
-                if (parser.filePath.endsWith("PetApi.java")) {
-                    console.log(parser.getAST().getStr())
-                    parser.getSwagger()
+                if (parser.filePath.endsWith("StoreApi.java")) {
                 }
+                parser.getSwagger()
+                // console.log(parser.getAST().getStr())
             }
         },
         console.log
@@ -27,10 +27,10 @@ function readAndParseFile(filePath: string) {
 }
 
 export function extractAPIs(directory: string) {
-    console.log("Reading directory: ", directory)
+    // console.log("Reading directory: ", directory)
     const files = readFilesRecursively(directory)
     for (const file of files) {
-        console.log(file);
+        // console.log(file);
 
         readAndParseFile(file)
     }      
