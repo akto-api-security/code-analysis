@@ -23,18 +23,41 @@ export function readFilesRecursively(dir: string): string[] {
 }
 
 // Function to read the contents of a file
-export function readFileContents(
-  filePath: string, 
-  success: (fileContent: string) => void, 
+export async function readFileContents(
+  filePath: string,
+  success: (fileContent: string) => void,
   err: (errStr: string) => void
 ) {
+
+
+  const fileReadPromise = new Promise<string>((resolve, reject) => {
     fs.readFile(filePath, 'utf8', (errException, data) => {
       if (errException) {
-        err(errException.message);
+        reject(errException.message); // Reject the Promise on error
       } else {
-        success(data);
+        resolve(data); // Resolve the Promise with the file content
       }
     });
+  });
+
+
+  await fileReadPromise.then(async (data: string) => {
+    try {
+      success(data); // Await the success function
+    } catch (error) {
+      err(error as string); // Handle errors from the success function
+    }
+  }).catch((error: string) => {
+    err(error); // Handle errors from the file reading operation
+  });
+
+  // fs.readFile(filePath, 'utf8', async (errException, data) => {
+  //   if (errException) {
+  //     err(errException.message);
+  //   } else {
+  //     await success(data);
+  //   }
+  // });
 }
 
 export function getFileExtension(filePath: string) {
