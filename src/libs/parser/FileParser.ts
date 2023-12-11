@@ -702,7 +702,6 @@ export class ParserFactory {
                 })
             default:
                 return new UnknownFileParser(filePath, fileContent)
-
         }
     }
 }

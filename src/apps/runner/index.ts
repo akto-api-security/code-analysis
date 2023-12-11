@@ -45,7 +45,17 @@ function checkForInclude(map: Map<string, Array<Map<string, string>>>): boolean 
 }
 
 export async function extractAPIs(directory: string) {
-    // console.log("Reading directory: ", directory)
+
+    let projectDirectory : string = ''
+    for (const args of process.argv) {
+        if (args.startsWith('projectPath')) {
+            projectDirectory = args.split('=')[1]
+        }
+    }
+    if (projectDirectory.length !== 0) {
+        directory = projectDirectory
+    }
+    console.log("Reading directory: ", directory)
     const files = readFilesRecursively(directory)
     for (const file of files) {
         // console.log(file);
