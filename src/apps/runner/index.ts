@@ -16,15 +16,10 @@ async function readAndParseFile(filePath: string) {
             // console.log("parser type: " + parser.getType() + " for file " + filePath)
             
             if (parser.getType() != ServerType.UNKNOWN) {
-                parser.getSwagger()
+                console.log("reading file", filePath)
+                // parser.getSwagger()
             }
             if (parser.filePath.endsWith("/djangofiles/urls.py")) {
-                // console.log("AST", parser.getAST().getStr())
-                // console.log("method size :-", DjangoFileParser.map.size)
-                // DjangoFileParser.map.forEach((value, key) => {
-                //     console.log("key:- ", key)
-                //     console.log("value:- ", value)
-                // })
             }
             return
         },
@@ -108,13 +103,14 @@ export async function extractAPIs(directory: string) {
     }
     console.log("Reading directory: ", directory)
     const files = readFilesRecursively(directory)
+    console.log("total files to be read", files.length)
     for (const file of files) {
         // console.log(file);
 
         await readAndParseFile(file)
     }  
 
-    
+
 
     let map = DjangoFileParser.map
     console.log(map)
@@ -154,7 +150,7 @@ export async function extractAPIs(directory: string) {
 extractAPIs("/Users/shivamrawat/source-code-inventory/django-example-project/django-files")
 // extractAPIs("/Users/shivamrawat/source-code-inventory/django-example-project/saleor")
 // extractAPIs("/Users/shivamrawat/source-code-inventory/django-example-project/kipartman")
-// extractAPIs("/Users/shivamrawat/source-code-inventory/django-example-project/django-shop")
+extractAPIs("/Users/shivamrawat/source-code-inventory/express-js-projects/express-mongodb-rest-api-boilerplate")
 // extractAPIs("/Users/shivamrawat/source-code-inventory/django-example-project/django-rest-swagger")
 // extractAPIs("/Users/shivamrawat/source-code-inventory/spring-boot-tutorial-master")
 // extractAPIs("/Users/shivamrawat/Downloads/code-analysis-feature-detect_language")

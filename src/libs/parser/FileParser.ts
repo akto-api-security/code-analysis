@@ -3,6 +3,8 @@ import path from "path"
 import { getFileExtension } from "../files/fileUtils"
 import { AST } from "./AST"
 import { url } from "inspector"
+import exp from "constants"
+import { File } from "buffer"
 
 export enum ServerType {
     SPRING_BOOT,
@@ -674,6 +676,28 @@ export class DjangoFileParser extends FileParser {
 
 }
 
+export class JavaScriptFileParser extends FileParser {
+    static parserObj : JavaScriptFileParser = new JavaScriptFileParser("","", new Parser())
+    parser: Parser
+    constructor(filePath: string, fileContent: string, parser: Parser) {
+        super(filePath, fileContent)
+        this.parser = parser
+    }
+
+    getType(): ServerType {
+        return ServerType.EXPRESS
+    }
+
+    getAST(): AST {
+        return new AST(this.parser.parse(this.fileContent))
+    }
+
+    getSwagger(): string {
+        console.log(this.getAST().getStr())
+        return ''
+    }
+
+}
 
 export class ParserFactory {
     static async createParser(filePath: string, fileContent: string): Promise<FileParser> {
@@ -699,6 +723,30 @@ export class ParserFactory {
                     );
                     parser.setLanguage(Python);
                     return new DjangoFileParser(filePath, fileContent, parser)
+                })
+            case "js":
+                return await Parser.init().then(async () => {
+                    const parser = new Parser()
+                    const JavaScript = await Parser.Language.load(
+                        path.resolve(__dirname, "tree-sitter-parsers/tree-sitter-javascript.wasm")
+                    )
+                    parser.setLanguage(JavaScript)
+                    JavaScriptFileParser.parserObj.filePath = filePath
+                    JavaScriptFileParser.parserObj.fileContent = fileContent
+                    JavaScriptFileParser.parserObj.parser = parser
+                    return JavaScriptFileParser.parserObj
+                })
+            case "ts":
+                return await Parser.init().then(async () => {
+                    const parser = new Parser()
+                    const TypeScript = await Parser.Language.load(
+                        path.resolve(__dirname, "tree-sitter-parsers/tree-sitter-typescript.wasm")
+                    )
+                    parser.setLanguage(TypeScript)
+                    JavaScriptFileParser.parserObj.filePath = filePath
+                    JavaScriptFileParser.parserObj.fileContent = fileContent
+                    JavaScriptFileParser.parserObj.parser = parser
+                    return JavaScriptFileParser.parserObj
                 })
             default:
                 return new UnknownFileParser(filePath, fileContent)
