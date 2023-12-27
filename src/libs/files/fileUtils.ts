@@ -22,6 +22,16 @@ export function readFilesRecursively(dir: string): string[] {
   return fileArray;
 }
 
+export function writeToFile(
+  filePath: string,
+  fileContent: string) {
+    fs.writeFile(filePath, fileContent, 'utf8',
+      (err) => {
+        if (err) throw err;
+          console.log('The file has been saved!');
+        })
+}
+
 // Function to read the contents of a file
 export async function readFileContents(
   filePath: string,

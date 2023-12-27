@@ -1,4 +1,4 @@
-import {readFilesRecursively, readFileContents} from '../../libs/files/fileUtils';
+import {readFilesRecursively, readFileContents, writeToFile} from '../../libs/files/fileUtils';
 import {FileParser, ParserFactory, ServerType, DjangoFileParser} from '../../libs/parser/FileParser'
 
 async function parseFile(filePath: string, fileContent: string): Promise<FileParser> {
@@ -33,16 +33,67 @@ async function readAndParseFile(filePath: string) {
 
 }
 
-function checkForInclude(map: Map<string, Array<Map<string, string>>>): boolean {
+function collateURLs() : Array<string> {
+    let urlsArray : Array<string> = new Array()
+    let map = DjangoFileParser.map
+
+    let includedMap : Set<string> = new Set()
     map.forEach((value, key) => {
-        value.forEach((urlMap) => {
+        let index = 0;
+        while (index < value.length) {
+            let urlMap = value[index]
+            let url = urlMap.get('url')!
+            let newEntryCreated = false;
             if (urlMap.has('include')) {
-                return true;
+                let includedPath = urlMap.get('include')
+                includedPath = includedPath?.replace(/[\.]/g, "/")
+                let mapKeys = map.keys()
+                for (const filePath of mapKeys) {
+                    if (filePath.includes(includedPath!)) {
+                        let includedURLs = map.get(filePath)
+                        includedMap.add(filePath)
+                        if (includedURLs !== undefined) {
+                            for (const includedURLMap of includedURLs) {
+                                let newURLMap = new Map<string, string>()
+                                let includedURL = includedURLMap.get('url')
+                                if (includedURL?.startsWith("r^")) {
+                                    includedURL = includedURL?.replace("r^","");
+                                }
+                                newURLMap.set("url", url + includedURL!);
+                                if (includedURLMap.has("include")) {
+                                    newURLMap.set("include", includedURLMap.get("include")!);
+                                }
+                                value.push(newURLMap);
+                                newEntryCreated = true;
+                            }
+                        }
+                        break;
+                    }
+                }
+                if (newEntryCreated) {
+                    value.splice(index, 1);
+                    index--;
+                }
             }
-        })
+            index++;
+        }
     })
-    return false;
+
+    map.forEach((value, key) => {
+        if (!includedMap.has(key)) {
+            for (const urlMap of value) {
+                let url = urlMap.get("url");
+                if (url?.startsWith("r^")) {
+                    url = url.replace("r^","")
+                }
+                urlsArray.push(url!);
+            }
+        }
+    })
+
+    return urlsArray;
 }
+
 
 export async function extractAPIs(directory: string) {
 
@@ -62,39 +113,22 @@ export async function extractAPIs(directory: string) {
 
         await readAndParseFile(file)
     }  
+
     
-    let urlsArray : Array<string> = new Array()
 
     let map = DjangoFileParser.map
     console.log(map)
-    let mapKeys = map.keys()
-    map.forEach((value, key) => {
-        for (const urlMap of value) {
-            let url = urlMap.get('url')!
-            if (urlMap.has('include')) {
-                let includedPath = urlMap.get('include')
-                includedPath = includedPath?.replace(/[\.]/g, "/")
-                for (const filePath of mapKeys) {
-                    let removeExtension = filePath.replace(/\.py$/, "")
-                    if (removeExtension.endsWith(includedPath!)) {
-                        let includedURLs = map.get(filePath)
-                        if (includedURLs !== undefined) {
-                            for (const includedURLMap of includedURLs) {
-                                let includedURL = includedURLMap.get('url')
-                                urlsArray.push(url + includedURL)
-                            }
-                        }
-                        break;
-                    }
-                }
-            } else {
-                urlsArray.push(url)
-            }
-        }
-    })
-
+    let urlsArray = collateURLs();
     console.log(urlsArray)
 
+    let finalStringToWrite = ""
+    for (const url of urlsArray) {
+        finalStringToWrite += url + "\n"
+    }
+    let fileName = directory.substring(directory.lastIndexOf("/") + 1, directory.length) + ".txt"
+    writeToFile(fileName, finalStringToWrite)
+
+    return
     // console.log(map)
 
     // while(checkForInclude(map)) {
@@ -117,10 +151,10 @@ export async function extractAPIs(directory: string) {
   
 
 // extractAPIs("/Users/shivamrawat/source-code-inventory/django-example-project/truck_signs_api")
-// extractAPIs("/Users/shivamrawat/source-code-inventory/django-example-project/django-files")
+extractAPIs("/Users/shivamrawat/source-code-inventory/django-example-project/django-files")
 // extractAPIs("/Users/shivamrawat/source-code-inventory/django-example-project/saleor")
 // extractAPIs("/Users/shivamrawat/source-code-inventory/django-example-project/kipartman")
-extractAPIs("/Users/shivamrawat/source-code-inventory/django-example-project/django-shop")
+// extractAPIs("/Users/shivamrawat/source-code-inventory/django-example-project/django-shop")
 // extractAPIs("/Users/shivamrawat/source-code-inventory/django-example-project/django-rest-swagger")
 // extractAPIs("/Users/shivamrawat/source-code-inventory/spring-boot-tutorial-master")
 // extractAPIs("/Users/shivamrawat/Downloads/code-analysis-feature-detect_language")
